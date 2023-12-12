@@ -1,17 +1,17 @@
 import sys
 
 from aiogram.enums import ParseMode
-
-import config
+import os
 import logging
 import asyncio
 from aiogram import Bot, Dispatcher, Router, types
+from dotenv import load_dotenv
 
+load_dotenv()
 # log level
 logging.basicConfig(level=logging.INFO)
 
-# bot init
-bot = Bot(token=config.TOKEN)
+token = os.getenv('TOKEN')
 
 dp = Dispatcher()
 
@@ -33,7 +33,7 @@ async def echo_handler(message) -> None:
 
 async def main() -> None:
     # Initialize Bot instance with a default parse mode which will be passed to all API calls
-    bot = Bot(config.TOKEN, parse_mode=ParseMode.HTML)
+    bot = Bot(token, parse_mode=ParseMode.HTML)
     # And the run events dispatching
     await dp.start_polling(bot)
 
