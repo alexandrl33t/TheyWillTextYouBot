@@ -1,41 +1,33 @@
+import asyncio
+import logging
+import os
 import sys
 
+import redis
+from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
-import os
-import logging
-import asyncio
-from aiogram import Bot, Dispatcher, Router, types
-from aiogram.fsm.storage.redis import RedisStorage
-from apscheduler.schedulers.background import BlockingScheduler
 from dotenv import load_dotenv
 
 load_dotenv()
 # log level
 logging.basicConfig(level=logging.INFO)
 
+redis_connect = redis.Redis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'), decode_responses=True)
 
 TOKEN = os.getenv('TOKEN')
-REDIS_URL = os.getenv('REDIS_URL')
-storage = RedisStorage.from_url(REDIS_URL)
-dp = Dispatcher(storage=storage)
+dp = Dispatcher()
 
 
 async def wait_and_check(message):
-    await dp.storage.set_state('message_id', message.id)
-    await asyncio.sleep(5)
-    await dp.storage.get_state('message_id')
-    await message.reply('бля, хорош 🔥')
+    redis_connect.set(str(message.chat.id), message.text)
+    await asyncio.sleep(180)
+    if redis_connect.get(str(message.chat.id)) == message.text:
+        await message.reply('бля, хорош 🔥')
 
 
 @dp.message()
 async def message_handler(message) -> None:
-    if message.chat.id == -1001828812929:
-        logging.info('все ок')
-    else:
-        if message.reply_to_message:
-            logging.info(message)
-        last_message = message.model_copy()
-        await wait_and_check(message)
+    await wait_and_check(message)
 
 
 async def main() -> None:
