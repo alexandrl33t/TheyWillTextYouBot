@@ -17,17 +17,23 @@ redis_connect = redis.Redis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_
 TOKEN = os.getenv('TOKEN')
 dp = Dispatcher()
 
+tasks = {}
+
 
 async def wait_and_check(message):
-    redis_connect.set(str(message.chat.id), message.text)
-    await asyncio.sleep(180)
-    if redis_connect.get(str(message.chat.id)) == message.text:
+    # write data to redis
+    redis_connect.set(message.chat.id, message.message_id)
+    await asyncio.sleep(10)
+    if redis_connect.get(message.chat.id) == str(message.message_id):
         await message.reply('бля, хорош 🔥')
 
 
 @dp.message()
 async def message_handler(message) -> None:
-    await wait_and_check(message)
+    if task := tasks.get(message.chat.id):
+        task.cancel()
+    tasks[message.chat.id] = asyncio.create_task(wait_and_check(message))
+    await tasks[message.chat.id]
 
 
 async def main() -> None:

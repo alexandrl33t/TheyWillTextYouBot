@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+  redis:
+    build: redis
+    restart: always
+    ports:
+      - "6379:6379"
+  bot:
+    build: python
+    container_name: twty_bot_python
+    depends_on:
+      - redis
+    env_file:
+      - python/.env
+    ports:
+      - "8000:8000"
