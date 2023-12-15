@@ -1,4 +1,5 @@
 # created by virtualenv automatically
 .idea
 python/venv
+python/wheels
 .env
