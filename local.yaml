@@ -6,6 +6,11 @@ services:
     restart: always
     ports:
       - "6379:6379"
+    networks:
+      back:
+        ipv4_address: 172.16.238.2
+        ipv6_address: 2001:3984:3989::2
+      default:
   bot:
     build: python
     container_name: twty_bot_python
@@ -15,3 +20,24 @@ services:
       - python/.env
     ports:
       - "8000:8000"
+    links:
+      - redis
+    networks:
+      back:
+        ipv4_address: 172.16.238.3
+        ipv6_address: 2001:3984:3989::4
+      default:
+networks:
+#Internal-only network for proper nginx proxying and ssh
+  back:
+    driver: bridge
+    enable_ipv6: true
+    internal: true
+    ipam:
+     driver: default
+     config:
+       - subnet: 172.16.238.0/24
+       - subnet: 2001:3984:3989::/64
+#External network actually
+  default:
+    driver: bridge

@@ -15,7 +15,7 @@ logging.info(f"Loading ENV")
 load_dotenv()
 
 logging.info(f"Connecting to Redis")
-redis_connect = redis.Redis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'), decode_responses=True)
+redis_connect = redis.Redis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'), decode_responses=True, db=0)
 
 TOKEN = os.getenv('TOKEN')
 dp = Dispatcher()
@@ -36,10 +36,10 @@ def get_random_answer():
 async def wait_and_check(message):
     # write data to redis
     logging.info("Set data in Redis")
-    redis_connect.set(message.chat.id, message.message_id)
+    redis_connect.set(str(message.chat.id), message.message_id)
     await asyncio.sleep(600)
     # check if data updated after time
-    if redis_connect.get(message.chat.id) == str(message.message_id):
+    if redis_connect.get(str(message.chat.id)) == str(message.message_id):
         await message.reply(get_random_answer())
 
 
